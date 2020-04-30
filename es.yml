@@ -3,7 +3,7 @@
   tasks:
 
     - name: sysctl settings
-      shell:  sysctl -w vm.max_map_count=262144
+      shell: sysctl -w vm.max_map_count=262144
       
     - name: create group
       group: name={{ es_user_group }} state=present gid={{ es_user_gid }}
