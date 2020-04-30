@@ -6,9 +6,10 @@ check & set hosts inside [main inventory](inventory)
 ## Contents
 - [main](main.yml)
 - [prepare hosts (setup docker / pip)](init-hosts.yml)
-- [elasticsearch setup](elasticsearch.yml)
+- [elasticsearch setup](es.yml)
 - [kibana setup](kibana.yml)
 - [logstash setup](logstash.yml)
+- [use logstash script](logstash.yml#L39)
 
 ## Run
 ```bash
