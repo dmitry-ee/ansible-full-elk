@@ -1,4 +1,4 @@
-# ansible full ELK in one script
+# ansible full ELK
 
 ## Cofigure
 check & set hosts inside [main inventory](inventory)
