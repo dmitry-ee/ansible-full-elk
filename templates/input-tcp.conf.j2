@@ -1,0 +1,13 @@
+input {
+  http {
+    port => 5000
+    type => something
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => [{% for host in groups["es"] %}"http://{{ host }}:{{ es_http_port }}"{{ "" if loop.last else "," }}{% endfor %}]
+    index => "%{type}-%{+yyyy-MM-dd}"
+  }
+}

@@ -1,0 +1,28 @@
+node:
+  name: {{ ansible_hostname }}
+  master: true
+  data: true
+
+network:
+  bind_host: 0.0.0.0
+  publish_host: {{ ansible_default_ipv4.address }}
+
+cluster:
+  name: {{ es_cluster_name }}
+  initial_master_nodes:
+{% for host in groups["es"] %}  - {{ host }}:{{ es_tcp_port }}
+{% endfor %}
+
+http:
+  port: {{ es_http_port }}
+
+transport:
+  tcp.port: {{ es_tcp_port }}
+
+discovery.zen:
+  ping.unicast.hosts:
+{% for host in groups["es"] %}
+{% if ansible_default_ipv4.address != host %}
+  - {{ host }}
+{% endif %}
+{% endfor %}

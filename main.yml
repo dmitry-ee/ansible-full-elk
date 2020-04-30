@@ -1,0 +1,5 @@
+
+- import_playbook: init-hosts.yml
+- import_playbook: es.yml
+- import_playbook: kibana.yml
+- import_playbook: logstash.yml

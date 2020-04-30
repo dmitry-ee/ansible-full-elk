@@ -1,0 +1,20 @@
+[Unit]
+Description=Kibana container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker rm {{ kibana_service_name }}
+ExecStart=/usr/bin/docker run \
+  --rm \
+  -e ELASTICSEARCH_HOSTS='[{% for host in groups["es"] %}"http://{{ host }}:{{ es_http_port }}"{{ "" if loop.last else "," }}{% endfor %}]' \
+  -p {{ kibana_port }}:5601 \
+  --name {{ kibana_service_name }} \
+  --memory={{ kibana_mem }} \
+  -v {{ kibana_config_dir }}:/usr/share/kibana/config \
+  {{ kibana_image }}
+ExecStop=/usr/bin/docker stop -t 5 {{ kibana_service_name }}
+
+[Install]
+WantedBy=multi-user.target

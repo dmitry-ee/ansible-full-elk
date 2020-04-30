@@ -1,0 +1,42 @@
+- hosts: logstash
+  become: yes
+  tasks:
+
+    - name: create logstash config dir
+      file: path={{ logstash_config_dir }} state=directory
+
+    - name: docker pull
+      docker_image: name={{ logstash_image }} state=present
+
+    - name: copy systemd file
+      template: src=logstash.service.j2 dest=/etc/systemd/system/{{ logstash_service_name }}.service
+      register: systemd_changed
+
+    - name: copy logstash configs
+      template: src={{ item }} dest={{ logstash_config_dir }}/{{ item | replace('.j2', '') }}
+      with_items:
+        - "{{ logstash_configs }}"
+
+    - name: reload systemd
+      shell: systemctl daemon-reload
+      when: systemd_changed.changed
+    
+    - name: start/restart service
+      service: name={{ logstash_service_name }} state=restarted
+      when: systemd_changed.changed
+    
+    - name: reload service
+      service: name={{ logstash_service_name }} state=reloaded
+      when: not systemd_changed.changed
+
+    - name: wait for logstash start
+      wait_for:
+        port: "{{ item }}"
+      with_items:
+        - "{{ logstash_ports }}"
+        - "{{ logstash_port }}"
+
+    - name: run python generate script
+      script: scripts/generate.py
+      args:
+        executable: python3

@@ -1,0 +1,39 @@
+- hosts: es
+  become: yes
+  tasks:
+
+    - name: sysctl settings
+      shell:  sysctl -w vm.max_map_count=262144
+      
+    - name: create group
+      group: name={{ es_user_group }} state=present gid={{ es_user_gid }}
+
+    - name: create user
+      user: name={{ es_user }} state=present group={{ es_user_group }} uid={{ es_user_uid }}
+
+    - name: create dirs
+      file: path={{ item }} state=directory owner={{ es_user_uid }} group={{ es_user_gid }}
+      with_items:
+        - "{{ es_data_dir }}"
+        - "{{ es_config_dir }}"
+
+    - name: copy es config
+      template: src=elasticsearch.yml.j2 dest={{ es_config_dir }}/elasticsearch.yml owner={{ es_user_uid }} group={{ es_user_gid }}
+
+    - name: docker pull
+      docker_image: name={{ es_image }} state=present
+
+    - name: copy systemd config
+      template: src=elasticsearch.service.j2 dest=/etc/systemd/system/{{ es_service_name }}.service
+
+    - name: copy jvm.options
+      copy: src=elasticsearch/jvm.options dest={{ es_config_dir }}/jvm.options owner={{ es_user_uid }} group={{ es_user_gid }}
+
+    - name: copy log4j2.properties
+      copy: src=elasticsearch/log4j2.properties dest={{ es_config_dir }}/log4j2.properties owner={{ es_user_uid }} group={{ es_user_gid }}
+
+    - name: reload systemd
+      shell: systemctl daemon-reload
+    
+    - name: start/restart service
+      service: name={{ es_service_name }} state=restarted

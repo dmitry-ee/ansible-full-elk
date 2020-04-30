@@ -1,0 +1,35 @@
+# ES
+es_cluster_name: my-elk
+es_config_dir: /etc/elasticsearch
+es_data_dir: /data/elasticsearch
+es_image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
+es_cpus: 2
+es_mem: 1024m
+es_heap_size: 512m
+es_service_name: elasticsearch
+es_user: elasticsearch
+es_user_group: elasticsearch
+es_user_uid: 200
+es_user_gid: 200
+es_http_port: 9200
+es_tcp_port: 9300
+
+# KIBANA
+kibana_image: docker.elastic.co/kibana/kibana:7.3.2
+kibana_service_name: kibana
+kibana_port: 5601
+kibana_mem: 512m
+kibana_config_dir: /etc/kibana
+
+# LOGSTASH
+logstash_mem: 768m
+logstash_image: docker.elastic.co/logstash/logstash:7.3.2
+logstash_config_dir: /etc/logstash
+logstash_service_name: logstash
+logstash_heap_size: 384m
+logstash_cpus: 1
+logstash_port: 5959
+logstash_configs:
+  - input-tcp.conf.j2
+logstash_ports:
+  - 5000

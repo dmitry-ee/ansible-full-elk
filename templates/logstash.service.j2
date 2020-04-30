@@ -1,0 +1,29 @@
+[Unit]
+Description={{ logstash_service_name }} container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker rm {{ logstash_service_name }}
+ExecStart=/usr/bin/docker run --rm \
+  --memory {{ logstash_mem }} \
+{% if logstash_cpus > 0 %}
+  --cpus {{ logstash_cpus }} \
+{% endif %}
+  -p {{ logstash_port }}:5959 \
+  -v {{ logstash_config_dir }}:{{ logstash_config_dir }} \
+  -e "XPACK_MONITORING_ENABLED=false" \
+  -e "LS_JAVA_OPTS=-Xmx{{ logstash_heap_size }} -Xms{{ logstash_heap_size }}" \
+{% for port in logstash_ports %}
+  -p {{ port }}:{{ port }} \
+{% endfor %}
+  --name {{ logstash_service_name }} \
+  {{ logstash_image }} \
+  logstash -f {{ logstash_config_dir }}/*.conf
+
+ExecStop=/usr/bin/docker stop -t 10 {{ logstash_service_name }}
+ExecReload=/usr/bin/docker kill -s HUP {{ logstash_service_name }}
+
+[Install]
+WantedBy=multi-user.target

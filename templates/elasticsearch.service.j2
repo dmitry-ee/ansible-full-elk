@@ -1,0 +1,26 @@
+[Unit]
+Description=Elasticsearch container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker rm {{ es_service_name }}
+ExecStart=/usr/bin/docker run --rm \
+  -e "ES_JAVA_OPTS=-Xms{{ es_heap_size }} -Xmx{{ es_heap_size }}" \
+  --net host \
+  --memory={{ es_mem }} \
+  -u {{ es_user_uid }} \
+{% if es_cpus > 0 %}
+  --cpus={{ [es_cpus, ansible_processor_vcpus] | min }} \
+{% endif %}
+  --cap-add=IPC_LOCK \
+  --ulimit memlock=-1:-1 \
+  --ulimit nofile=65536:65536 \
+  -v {{ es_config_dir }}:/usr/share/elasticsearch/config \
+  -v {{ es_data_dir }}:/usr/share/elasticsearch/data \
+  --name {{ es_service_name }} {{ es_image }}
+ExecStop=/usr/bin/docker stop -t 10 {{ es_service_name }}
+
+[Install]
+WantedBy=multi-user.target
